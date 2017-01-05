@@ -1,6 +1,8 @@
 import argparse
+import urllib.request
 
 DEFAULT_SEARCH_WORD = 'volvo'
+URL = 'http://www.blocket.se'
 
 def _setup_args_parser():
 	parser = argparse.ArgumentParser()
@@ -10,9 +12,11 @@ def _setup_args_parser():
 
 def main():
 	args = _setup_args_parser()
-
-	# read xml and find the applicable test case element
 	print('Searching for word "{}" ...'.format(args.searchword))
+
+	print('Fetching content from blocket')
+	webpage_content = urllib.request.urlopen(URL).read()
+	print('Received content:\n{}'.format(webpage_content))
 
 if __name__ == "__main__":
 	main()
