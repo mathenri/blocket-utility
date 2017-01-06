@@ -1,8 +1,9 @@
 import argparse
 import urllib.request
+import bs4
 
 DEFAULT_SEARCH_WORD = 'volvo'
-URL = 'http://www.blocket.se'
+URL = 'https://www.blocket.se/goteborg?ca=15'
 
 def _setup_args_parser():
 	parser = argparse.ArgumentParser()
@@ -16,7 +17,10 @@ def main():
 
 	print('Fetching content from blocket')
 	webpage_content = urllib.request.urlopen(URL).read()
-	print('Received content:\n{}'.format(webpage_content))
+
+	# use beautiful soup to scrape web page
+	soup = bs4.BeautifulSoup(webpage_content)
+	print(soup.prettify()[0:1000])
 
 if __name__ == "__main__":
 	main()
