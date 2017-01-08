@@ -5,6 +5,7 @@ import bs4
 DEFAULT_SEARCH_WORD = 'volvo'
 URL = 'https://www.blocket.se/goteborg?ca=15'
 OUTPUT_FILEPATH = './output.html'
+ARTICLE_ELEMENT_TAG = 'article'
 
 def _setup_args_parser():
 	parser = argparse.ArgumentParser()
@@ -21,6 +22,8 @@ def main():
 
 	# use beautiful soup to scrape web page
 	soup = bs4.BeautifulSoup(webpage_content)
+	items = soup.find_all(ARTICLE_ELEMENT_TAG)
+	print('Number of article elements: {}'.format(len(items)))
 	
 	# print website content to file
 	print('Printing web content to file: {}'.format(OUTPUT_FILEPATH))
