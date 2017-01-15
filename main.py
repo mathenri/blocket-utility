@@ -2,6 +2,7 @@ import argparse
 import urllib.request
 import bs4
 import sys
+import json
 
 # default args
 DEFAULT_SEARCH_WORD = 'volvo'
@@ -12,6 +13,7 @@ DEFAULT_LOWER_PRICE_LIMIT = 0
 OUTPUT_FILEPATH = './output.txt'
 DIV_ELEMENT_TAG = 'div'
 LIST_ITEM_CLASS = 'media-body desc'
+PRICE_KEY = 'price'
 
 def _setup_args_parser():
 	parser = argparse.ArgumentParser()
@@ -32,9 +34,10 @@ def _create_url(searchword, area):
 
 
 def _format_price_str(price_string):
-	""" Takes a string on the format '17 000:-' and returns it on the format '17000'. """
+	""" Takes a string on the format '17 000:-...' and returns it on the format '17000'. """
 
-	return price_string[:-2].replace(" ", "")
+	price_string = price_string.split(':')[0]
+	return price_string.replace(" ", "")
 
 
 def main():
@@ -47,7 +50,7 @@ def main():
 	# use beautiful soup to scrape web page
 	soup = bs4.BeautifulSoup(webpage_content)
 	items_elements = soup.find_all(DIV_ELEMENT_TAG, class_=LIST_ITEM_CLASS)
-	items = []
+	items = dict()
 	for item_elem in items_elements:
 		title = item_elem.h1.a.get_text()
 		if title is None or title == '':
@@ -60,16 +63,23 @@ def main():
 			continue
 
 		price = _format_price_str(item_elem.p.get_text())
+		try:
+			price = int(price)
+		except:
+			print('Error: Could not cast price string into int! Skipping this item. Price string: ' + price)
+			continue
 	
 		# if this item fulfils the conditions to be considered, add it to the output file
 		if int(price) < args.upperpricelimit and int(price) > args.lowerpricelimit:
-			items.append(title + ',' + price)
+			item_properties = dict()
+			item_properties[PRICE_KEY] = price
+			items[title] = item_properties
+
 
 	# print website content to file
 	print('Printing web content to file: {}'.format(OUTPUT_FILEPATH))
 	with open(OUTPUT_FILEPATH, 'w') as output_file:
-		output_file.write('item,price\n')
-		output_file.write('\n'.join(items))
+		json.dump(items, output_file)
 
 
 if __name__ == "__main__":
