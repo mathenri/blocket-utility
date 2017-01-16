@@ -14,6 +14,7 @@ OUTPUT_FILEPATH = './output.txt'
 DIV_ELEMENT_TAG = 'div'
 LIST_ITEM_CLASS = 'media-body desc'
 PRICE_KEY = 'price'
+LINK_KEY = 'link'
 
 def _setup_args_parser():
 	parser = argparse.ArgumentParser()
@@ -57,6 +58,11 @@ def main():
 			print('Error: Found item with no title! Skipping this item.')
 			continue
 
+		link = item_elem.h1.a['href']
+		if link is None or link == '':
+			print('Error: Found item with no link! Skipping this item.')
+			continue
+
 		price = item_elem.p.get_text()
 		if price is None or price == '':
 			print('Error: Found item with no price! Skipping this item.')
@@ -66,20 +72,21 @@ def main():
 		try:
 			price = int(price)
 		except:
-			print('Error: Could not cast price string into int! Skipping this item. Price string: ' + price)
+			print('Error: Could not cast price string into int! Skipping this item.\nPrice string: ' + price)
 			continue
 	
-		# if this item fulfils the conditions to be considered, add it to the output file
+		# if this item fulfils the conditions, add it to the output file
 		if int(price) < args.upperpricelimit and int(price) > args.lowerpricelimit:
 			item_properties = dict()
 			item_properties[PRICE_KEY] = price
+			item_properties[LINK_KEY] = link
 			items[title] = item_properties
 
 
 	# print website content to file
 	print('Printing web content to file: {}'.format(OUTPUT_FILEPATH))
 	with open(OUTPUT_FILEPATH, 'w') as output_file:
-		json.dump(items, output_file)
+		json.dump(items, output_file, indent=4, sort_keys=True)
 
 
 if __name__ == "__main__":
