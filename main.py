@@ -3,6 +3,7 @@ import urllib.request
 import bs4
 import sys
 import json
+import smtplib
 
 # default args
 DEFAULT_SEARCH_WORD = 'volvo'
@@ -16,6 +17,9 @@ LIST_ITEM_CLASS = 'media-body desc'
 PRICE_KEY = 'price'
 LINK_KEY = 'link'
 
+MAIL_SERVER_ADDRESS = ''
+MAIL_SERVER_PASS = ''
+
 def _setup_args_parser():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-s", "--searchword", help="the word to search for", default=DEFAULT_SEARCH_WORD)
@@ -24,6 +28,8 @@ def _setup_args_parser():
 		default=DEFAULT_UPPER_PRICE_LIMIT, type=int)
 	parser.add_argument("-l", "--lowerpricelimit", help="items with a lower price than this will not be considered",
 		default=DEFAULT_LOWER_PRICE_LIMIT, type=int)
+	parser.add_argument("-m", "--mail", help="identifies an email address to send notifications to")
+
 
 	return parser.parse_args()
 
@@ -87,6 +93,16 @@ def main():
 	print('Printing web content to file: {}'.format(OUTPUT_FILEPATH))
 	with open(OUTPUT_FILEPATH, 'w') as output_file:
 		json.dump(items, output_file, indent=4, sort_keys=True)
+
+	# send mail
+	if args.mail is not None:
+		server = smtplib.SMTP('smtp.gmail.com', 587)
+		server.starttls()
+		server.login(MAIL_SERVER_ADDRESS, MAIL_SERVER_PASS)
+
+		msg = "Found new blocket items!"
+		server.sendmail(MAIL_SERVER_ADDRESS, args.mail, msg)
+		server.quit()
 
 
 if __name__ == "__main__":
