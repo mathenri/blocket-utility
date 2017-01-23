@@ -19,8 +19,8 @@ LIST_ITEM_CLASS = 'media-body desc'
 PRICE_KEY = 'price'
 LINK_KEY = 'link'
 
-MAIL_SERVER_ADDRESS = 'blocketutilitymailserver@gmail.com'
-MAIL_SERVER_PASS = 'viking123$$'
+MAIL_SERVER_ADDRESS = ''
+MAIL_SERVER_PASS = ''
 
 def _setup_args_parser():
 	parser = argparse.ArgumentParser()
