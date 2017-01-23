@@ -4,6 +4,8 @@ import bs4
 import sys
 import json
 import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # default args
 DEFAULT_SEARCH_WORD = 'volvo'
@@ -17,8 +19,8 @@ LIST_ITEM_CLASS = 'media-body desc'
 PRICE_KEY = 'price'
 LINK_KEY = 'link'
 
-MAIL_SERVER_ADDRESS = ''
-MAIL_SERVER_PASS = ''
+MAIL_SERVER_ADDRESS = 'blocketutilitymailserver@gmail.com'
+MAIL_SERVER_PASS = 'viking123$$'
 
 def _setup_args_parser():
 	parser = argparse.ArgumentParser()
@@ -45,6 +47,25 @@ def _format_price_str(price_string):
 
 	price_string = price_string.split(':')[0]
 	return price_string.replace(" ", "")
+
+def _send_email(to_addr, items):
+	""" Sends an email with the found items. """
+
+	msg = MIMEMultipart()
+	msg['From'] = MAIL_SERVER_ADDRESS
+	msg['To'] = to_addr
+	msg['Subject'] = "New blocket items found!"
+ 
+	body = "The following blockt items were found in the last search:\n" + json.dumps(items, sort_keys=True,
+		indent=4) 
+	msg.attach(MIMEText(body, 'plain'))
+ 
+	server = smtplib.SMTP('smtp.gmail.com', 587)
+	server.starttls()
+	server.login(MAIL_SERVER_ADDRESS, MAIL_SERVER_PASS)
+	text = msg.as_string()
+	server.sendmail(MAIL_SERVER_ADDRESS, to_addr, text)
+	server.quit()
 
 
 def main():
@@ -88,7 +109,6 @@ def main():
 			item_properties[LINK_KEY] = link
 			items[title] = item_properties
 
-
 	# print website content to file
 	print('Printing web content to file: {}'.format(OUTPUT_FILEPATH))
 	with open(OUTPUT_FILEPATH, 'w') as output_file:
@@ -96,14 +116,7 @@ def main():
 
 	# send mail
 	if args.mail is not None:
-		server = smtplib.SMTP('smtp.gmail.com', 587)
-		server.starttls()
-		server.login(MAIL_SERVER_ADDRESS, MAIL_SERVER_PASS)
-
-		msg = "Found new blocket items!"
-		server.sendmail(MAIL_SERVER_ADDRESS, args.mail, msg)
-		server.quit()
-
+		_send_email(args.mail, items)
 
 if __name__ == "__main__":
 	main()
